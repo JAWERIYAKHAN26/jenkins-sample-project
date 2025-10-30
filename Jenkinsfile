@@ -17,26 +17,18 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Run Docker Container') {  // ✅ single clean stage
             steps {
                 script {
-                    echo 'Running container...'
+                    echo 'Stopping old container if running...'
+                    bat '''
+                    for /f "tokens=*" %%i in ('docker ps -q --filter "ancestor=jenkins-sample-app"') do docker stop %%i
+                    '''
+
+                    echo 'Running new container...'
                     bat 'docker run -d -p 8081:80 jenkins-sample-app'
                 }
             }
-        }
-    }
-}
-stage('Run Docker Container') {
-    steps {
-        script {
-            echo 'Stopping old container if running...'
-            bat """
-            for /f "tokens=*" %%i in ('docker ps -q --filter "ancestor=jenkins-sample-app"') do docker stop %%i
-            """
-
-            echo 'Running new container...'
-            bat 'docker run -d -p 8081:80 jenkins-sample-app'
         }
     }
 }
