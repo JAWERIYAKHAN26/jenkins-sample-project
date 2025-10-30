@@ -30,11 +30,14 @@ pipeline {
 stage('Run Docker Container') {
     steps {
         script {
-            echo 'Running container...'
-            // Stop old container if it exists
-            bat 'docker stop $(docker ps -q --filter "ancestor=jenkins-sample-app") || echo "No old container running"'
-            // Run new container
+            echo 'Stopping old container if running...'
+            bat '''
+            for /f "tokens=*" %%i in ('docker ps -q --filter "ancestor=jenkins-sample-app"') do docker stop %%i
+            '''
+
+            echo 'Running new container...'
             bat 'docker run -d -p 8081:80 jenkins-sample-app'
         }
     }
 }
+
