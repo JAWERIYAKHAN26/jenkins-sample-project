@@ -6,3 +6,4 @@ COPY . /usr/share/nginx/html
 
 # Step 3: Expose port 80 for web access
 EXPOSE 80
+

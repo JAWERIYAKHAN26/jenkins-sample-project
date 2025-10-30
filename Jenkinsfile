@@ -27,3 +27,14 @@ pipeline {
         }
     }
 }
+stage('Run Docker Container') {
+    steps {
+        script {
+            echo 'Running container...'
+            // Stop old container if it exists
+            bat 'docker stop $(docker ps -q --filter "ancestor=jenkins-sample-app") || echo "No old container running"'
+            // Run new container
+            bat 'docker run -d -p 8081:80 jenkins-sample-app'
+        }
+    }
+}
