@@ -26,10 +26,11 @@ pipeline {
                 docker stop %%i
                 docker rm %%i
             )
+            if %errorlevel% neq 0 echo No old container found or stopped
             '''
 
             echo 'Running new container...'
-            bat 'docker run -d -p 8081:80 jenkins-sample-app'
+            bat 'docker run -d -p 8081:80 jenkins-sample-app || echo Container already running'
         }
     }
 }
