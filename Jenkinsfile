@@ -20,26 +20,32 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    echo 'Stopping old container if running...'
+                    echo 'Stopping old containers if any...'
                     bat '''
-                    for /f "tokens=*" %%i in ('docker ps -q --filter "ancestor=jenkins-sample-app"') do (
-                        echo Stopping container %%i
-                        docker stop %%i >nul 2>&1
-                        docker rm %%i >nul 2>&1
+                    @echo off
+                    setlocal
+                    set containers=
+                    for /F "tokens=*" %%i in ('docker ps -q --filter "ancestor=jenkins-sample-app"') do set containers=%%i
+                    if defined containers (
+                        echo Stopping container %containers%
+                        docker stop %containers%
+                        docker rm %containers%
+                    ) else (
+                        echo No running containers to stop
                     )
-                    '''
 
-                    echo 'Running new container...'
-                    // agar port already occupied hai toh force remove aur retry
-                    bat '''
-                    netstat -ano | findstr :8081 && (
-                        for /f "tokens=5" %%p in ('netstat -ano ^| findstr :8081') do taskkill /PID %%p /F
+                    REM Free port 8081 if occupied
+                    for /f "tokens=5" %%p in ('netstat -ano ^| findstr :8081') do (
+                        echo Killing process on port 8081: PID %%p
+                        taskkill /PID %%p /F
                     )
+
+                    REM Run new container
                     docker run -d -p 8081:80 jenkins-sample-app
+                    endlocal
                     '''
                 }
             }
         }
     }
 }
-git add Jenkinsfile
